@@ -20,7 +20,7 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    fn scan_tokens(&mut self) {
+    pub fn scan_tokens(&mut self) {
         while !self.is_at_end() {
             self.start = self.current;
             self.scan_token();

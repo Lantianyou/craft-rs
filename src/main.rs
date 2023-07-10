@@ -5,5 +5,6 @@ mod token;
 mod ast;
 
 fn main() {
-    let scanner = Scanner::new("1 + 2");
+    let mut scanner = Scanner::new("1 + 2");
+    scanner.scan_tokens();
 }
