@@ -4,9 +4,9 @@ use std::str::FromStr;
 pub struct Scanner<'a> {
     source: &'a str,
     tokens: Vec<Token<'a>>,
-    _start: usize,
-    _current: usize,
-    _line: u32,
+    start: usize,
+    current: usize,
+    line: u32,
 }
 
 impl<'a> Scanner<'a> {
@@ -14,24 +14,24 @@ impl<'a> Scanner<'a> {
         Scanner {
             source,
             tokens: Vec::new(),
-            _start: 0,
-            _current: 0,
-            _line: 1,
+            start: 0,
+            current: 0,
+            line: 1,
         }
     }
 
     fn scan_tokens(&mut self) {
         while !self.is_at_end() {
-            self._start = self._current;
+            self.start = self.current;
             self.scan_token();
         }
 
         self.tokens
-            .push(Token::new(TokenType::EOF, "", None, self._line));
+            .push(Token::new(TokenType::EOF, "", None, self.line));
     }
 
     fn is_at_end(&self) -> bool {
-        self._current >= self.source.len()
+        self.current >= self.source.len()
     }
 
     fn scan_token(&mut self) {
@@ -94,7 +94,7 @@ impl<'a> Scanner<'a> {
                 }
             }
             ' ' | '\r' | '\t' => {}
-            '\n' => self._line += 1,
+            '\n' => self.line += 1,
             'o' => {
                 if self.peek_match('r') {
                     self.advance();
@@ -107,15 +107,15 @@ impl<'a> Scanner<'a> {
                 } else if c.is_alphabetic() {
                     self.identifier();
                 } else {
-                    println!("error: unexpected character {} at line {}", c, self._line);
+                    println!("error: unexpected character {} at line {}", c, self.line);
                 }
             }
         }
     }
 
     fn advance(&mut self) -> char {
-        let res = self.source.chars().nth(self._current).unwrap();
-        self._current += 1;
+        let res = self.source.chars().nth(self.current).unwrap();
+        self.current += 1;
         return res;
     }
 
@@ -124,16 +124,16 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token_literal(&mut self, token_type: TokenType, literal: Option<Literal<'a>>) {
-        let text = &self.source[self._start..self._current];
+        let lexeme = &self.source[self.start..self.current];
         self.tokens
-            .push(Token::new(token_type, text, literal, self._line));
+            .push(Token::new(token_type, lexeme, literal, self.line));
     }
 
     fn peek_match(&self, expected: char) -> bool {
         if self.is_at_end() {
             return false;
         }
-        if self.source.chars().nth(self._current).unwrap() != expected {
+        if self.source.chars().nth(self.current).unwrap() != expected {
             return false;
         }
         return true;
@@ -143,25 +143,25 @@ impl<'a> Scanner<'a> {
         if self.is_at_end() {
             return NULL_CHAR;
         }
-        return self.source.chars().nth(self._current).unwrap();
+        return self.source.chars().nth(self.current).unwrap();
     }
 
     fn string(&mut self) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
-                self._line += 1;
+                self.line += 1;
             }
             self.advance();
         }
 
         if self.is_at_end() {
-            println!("error: unterminated string at line {}", self._line);
+            println!("error: unterminated string at line {}", self.line);
             return;
         }
 
         self.advance();
 
-        let value = &self.source[self._start + 1..self._current - 1];
+        let value = &self.source[self.start + 1..self.current - 1];
         self.add_token_literal(TokenType::STRING, Some(Literal::Str(value)));
     }
 
@@ -177,7 +177,7 @@ impl<'a> Scanner<'a> {
             }
         }
 
-        let val: &str = &self.source[self._start..self._current];
+        let val: &str = &self.source[self.start..self.current];
         let num = f64::from_str(val).unwrap();
         self.add_token_literal(TokenType::NUMBER, Some(Literal::Num(num)))
     }
@@ -187,15 +187,15 @@ impl<'a> Scanner<'a> {
             self.advance();
         }
 
-        let text: &str = &self.source[self._start..self._current];
+        let text: &str = &self.source[self.start..self.current];
         let token_type = keyword(text).unwrap_or(TokenType::IDENTIFIER);
         self.add_token(token_type);
     }
 
-    fn peek_next(&mut self) -> char {
-        if self._current + 1 >= self.source.len() {
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
             return NULL_CHAR;
         }
-        return self.source.chars().nth(self._current + 1).unwrap();
+        return self.source.chars().nth(self.current + 1).unwrap();
     }
 }
