@@ -129,23 +129,6 @@ impl<'a> Scanner<'a> {
             .push(Token::new(token_type, lexeme, literal, self.line));
     }
 
-    fn peek_match(&self, expected: char) -> bool {
-        if self.is_at_end() {
-            return false;
-        }
-        if self.source.chars().nth(self.current).unwrap() != expected {
-            return false;
-        }
-        return true;
-    }
-
-    fn peek(&self) -> char {
-        if self.is_at_end() {
-            return NULL_CHAR;
-        }
-        return self.source.chars().nth(self.current).unwrap();
-    }
-
     fn string(&mut self) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -192,10 +175,21 @@ impl<'a> Scanner<'a> {
         self.add_token(token_type);
     }
 
+    fn peek(&self) -> char {
+        if self.is_at_end() {
+            return NULL_CHAR;
+        }
+        return self.source.chars().nth(self.current).unwrap();
+    }
+
     fn peek_next(&self) -> char {
         if self.current + 1 >= self.source.len() {
             return NULL_CHAR;
         }
         return self.source.chars().nth(self.current + 1).unwrap();
+    }
+
+    fn peek_match(&self, expected: char) -> bool {
+        return self.peek() == expected;
     }
 }
