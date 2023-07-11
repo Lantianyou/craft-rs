@@ -1,6 +1,7 @@
-use crate::token::{keyword, Token, TokenType, NULL_CHAR, Literal};
+use crate::token::{keyword, Literal, Token, TokenType, NULL_CHAR};
 use std::str::FromStr;
 
+#[derive(Debug)]
 pub struct Scanner<'a> {
     source: &'a str,
     tokens: Vec<Token<'a>>,
